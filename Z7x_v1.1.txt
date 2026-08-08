@@ -1,0 +1,707 @@
+local LP=game:GetService("Players").LocalPlayer
+local TS=game:GetService("TweenService")
+local RS=game:GetService("RunService")
+local P=game:GetService("Players")
+local CG=workspace.CurrentCamera
+local UIS=game:GetService("UserInputService")
+local Stats=game:GetService("Stats")
+local Lighting=game:GetService("Lighting")
+
+local sg=Instance.new("ScreenGui")
+sg.Name="Z7X_MENU"
+sg.ResetOnSpawn=false
+sg.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+sg.Parent=LP:WaitForChild("PlayerGui")
+
+local sound=Instance.new("Sound")
+sound.SoundId="rbxassetid://6026984224"
+sound.Volume=.45
+sound.Parent=sg
+
+local function click()
+	sound:Stop()
+	sound.TimePosition=0
+	sound:Play()
+end
+
+local main=Instance.new("Frame")
+main.Size=UDim2.fromOffset(287,294)
+main.Position=UDim2.new(.5,-143,.5,-147)
+main.BackgroundColor3=Color3.fromRGB(12,13,18)
+main.BorderSizePixel=0
+main.Parent=sg
+
+Instance.new("UICorner",main).CornerRadius=UDim.new(0,15)
+
+local stroke=Instance.new("UIStroke",main)
+stroke.Thickness=1.5
+
+local rgbLine=Instance.new("Frame",main)
+rgbLine.Size=UDim2.new(1,0,0,3)
+rgbLine.BorderSizePixel=0
+
+local function rgb()
+	local c=Color3.fromHSV((os.clock()*.2)%1,1,1)
+	stroke.Color=c
+	rgbLine.BackgroundColor3=c
+	return c
+end
+
+local header=Instance.new("Frame",main)
+header.Size=UDim2.new(1,0,0,48)
+header.BackgroundTransparency=1
+
+local logo=Instance.new("TextLabel",header)
+logo.Size=UDim2.fromOffset(34,34)
+logo.Position=UDim2.fromOffset(10,7)
+logo.BackgroundColor3=Color3.fromRGB(28,30,39)
+logo.Text="Z"
+logo.TextColor3=Color3.new(1,1,1)
+logo.Font=Enum.Font.GothamBlack
+logo.TextSize=17
+logo.BorderSizePixel=0
+Instance.new("UICorner",logo).CornerRadius=UDim.new(0,9)
+
+local title=Instance.new("TextLabel",header)
+title.Size=UDim2.new(1,-105,0,24)
+title.Position=UDim2.fromOffset(53,5)
+title.BackgroundTransparency=1
+title.Text="Z7X MENU"
+title.TextColor3=Color3.fromRGB(245,245,255)
+title.Font=Enum.Font.GothamBold
+title.TextSize=16
+title.TextXAlignment=Enum.TextXAlignment.Left
+
+local sub=Instance.new("TextLabel",header)
+sub.Size=UDim2.new(1,-105,0,16)
+sub.Position=UDim2.fromOffset(54,27)
+sub.BackgroundTransparency=1
+sub.Text="PLAYER CONTROL"
+sub.TextColor3=Color3.fromRGB(125,130,145)
+sub.Font=Enum.Font.GothamMedium
+sub.TextSize=8
+sub.TextXAlignment=Enum.TextXAlignment.Left
+
+local min=Instance.new("TextButton",header)
+min.Size=UDim2.fromOffset(30,30)
+min.Position=UDim2.new(1,-68,0,8)
+min.Text="—"
+min.TextSize=15
+min.Font=Enum.Font.GothamBold
+min.TextColor3=Color3.fromRGB(210,215,225)
+min.BackgroundColor3=Color3.fromRGB(27,29,38)
+min.BorderSizePixel=0
+min.AutoButtonColor=false
+Instance.new("UICorner",min).CornerRadius=UDim.new(0,9)
+
+local close=Instance.new("TextButton",header)
+close.Size=UDim2.fromOffset(30,30)
+close.Position=UDim2.new(1,-33,0,8)
+close.Text="×"
+close.TextSize=19
+close.Font=Enum.Font.GothamBold
+close.TextColor3=Color3.fromRGB(255,110,125)
+close.BackgroundColor3=Color3.fromRGB(45,25,30)
+close.BorderSizePixel=0
+close.AutoButtonColor=false
+Instance.new("UICorner",close).CornerRadius=UDim.new(0,9)
+
+local line=Instance.new("Frame",main)
+line.Size=UDim2.new(1,-20,0,1)
+line.Position=UDim2.fromOffset(10,52)
+line.BackgroundColor3=Color3.fromRGB(40,42,53)
+line.BorderSizePixel=0
+
+local tabs=Instance.new("Frame",main)
+tabs.Size=UDim2.fromOffset(58,218)
+tabs.Position=UDim2.fromOffset(10,63)
+tabs.BackgroundColor3=Color3.fromRGB(18,20,27)
+tabs.BorderSizePixel=0
+Instance.new("UICorner",tabs).CornerRadius=UDim.new(0,11)
+
+local ab=Instance.new("TextButton",tabs)
+ab.Size=UDim2.new(1,-8,0,43)
+ab.Position=UDim2.fromOffset(4,5)
+ab.Text="Ab"
+ab.Font=Enum.Font.GothamBold
+ab.TextSize=14
+ab.TextColor3=Color3.new(1,1,1)
+ab.BackgroundColor3=Color3.fromRGB(35,37,48)
+ab.BorderSizePixel=0
+ab.AutoButtonColor=false
+Instance.new("UICorner",ab).CornerRadius=UDim.new(0,9)
+
+local content=Instance.new("ScrollingFrame",main)
+content.Size=UDim2.fromOffset(205,218)
+content.Position=UDim2.fromOffset(76,63)
+content.BackgroundTransparency=1
+content.BorderSizePixel=0
+content.ScrollBarThickness=2
+content.CanvasSize=UDim2.fromOffset(0,0)
+
+local layout=Instance.new("UIListLayout",content)
+layout.Padding=UDim.new(0,7)
+
+local function button(txt)
+	local b=Instance.new("TextButton",content)
+	b.Size=UDim2.new(1,-4,0,38)
+	b.BackgroundColor3=Color3.fromRGB(24,26,34)
+	b.BorderSizePixel=0
+	b.Text=txt
+	b.Font=Enum.Font.GothamBold
+	b.TextSize=11
+	b.TextColor3=Color3.fromRGB(255,105,120)
+	b.AutoButtonColor=false
+	Instance.new("UICorner",b).CornerRadius=UDim.new(0,9)
+
+	b.MouseEnter:Connect(function()
+		TS:Create(b,TweenInfo.new(.12),{BackgroundColor3=Color3.fromRGB(34,36,48)}):Play()
+	end)
+
+	b.MouseLeave:Connect(function()
+		TS:Create(b,TweenInfo.new(.12),{BackgroundColor3=Color3.fromRGB(24,26,34)}):Play()
+	end)
+
+	b.Activated:Connect(click)
+	return b
+end
+
+local espBtn=button("ESP PLAYER: OFF")
+local tracerBtn=button("TRACERS: OFF")
+local aimBtn=button("LOCK AIMBOT: OFF")
+local partBtn=button("AIM PART: TORSO")
+
+local function inputBox(placeholder)
+	local box=Instance.new("TextBox",content)
+	box.Size=UDim2.new(1,-4,0,38)
+	box.BackgroundColor3=Color3.fromRGB(24,26,34)
+	box.BorderSizePixel=0
+	box.PlaceholderText=placeholder
+	box.PlaceholderColor3=Color3.fromRGB(120,125,140)
+	box.Text=""
+	box.TextColor3=Color3.fromRGB(235,235,245)
+	box.Font=Enum.Font.GothamMedium
+	box.TextSize=11
+	box.ClearTextOnFocus=false
+	box.TextXAlignment=Enum.TextXAlignment.Left
+	box.TextYAlignment=Enum.TextYAlignment.Center
+
+	local pad=Instance.new("UIPadding",box)
+	pad.PaddingLeft=UDim.new(0,12)
+	pad.PaddingRight=UDim.new(0,8)
+
+	local st=Instance.new("UIStroke",box)
+	st.Thickness=1
+	st.Transparency=.55
+	st.Color=Color3.fromRGB(55,58,72)
+
+	Instance.new("UICorner",box).CornerRadius=UDim.new(0,9)
+
+	box.Focused:Connect(function()
+		click()
+		TS:Create(box,TweenInfo.new(.12),{BackgroundColor3=Color3.fromRGB(30,32,42)}):Play()
+		TS:Create(st,TweenInfo.new(.12),{Transparency=.1}):Play()
+	end)
+
+	box.FocusLost:Connect(function()
+		TS:Create(box,TweenInfo.new(.12),{BackgroundColor3=Color3.fromRGB(24,26,34)}):Play()
+		TS:Create(st,TweenInfo.new(.12),{Transparency=.55}):Play()
+	end)
+
+	return box
+end
+
+local fov=inputBox("FOV SIZE  •  150")
+local distance=inputBox("LOCK DISTANCE  •  300")
+
+local boost=button("BOOST FPS: OFF")
+local fps=button("SHOW FPS & PING: OFF")
+
+local espOn=false
+local tracerOn=false
+local aimOn=false
+local aimPart="HumanoidRootPart"
+local lockDistance=300
+local fovSize=150
+local data={}
+
+local fovCircle
+pcall(function()
+	fovCircle=Drawing.new("Circle")
+	fovCircle.Thickness=1.5
+	fovCircle.NumSides=60
+	fovCircle.Filled=false
+	fovCircle.Radius=150
+	fovCircle.Visible=false
+end)
+
+local function clean(p)
+	local d=data[p]
+	if not d then return end
+	if d.highlight then pcall(function() d.highlight:Destroy() end) end
+	if d.line then pcall(function() d.line:Remove() end) end
+	data[p]=nil
+end
+
+local function makeESP(p)
+	if p==LP or not p.Character then return end
+
+	clean(p)
+
+	local h=Instance.new("Highlight")
+	h.Parent=p.Character
+	h.FillTransparency=.45
+	h.OutlineTransparency=0
+
+	local l
+	pcall(function()
+		l=Drawing.new("Line")
+		l.Thickness=1.5
+		l.Visible=false
+	end)
+
+	data[p]={highlight=h,line=l}
+end
+
+local function setup(p)
+	if p==LP then return end
+
+	p.CharacterAdded:Connect(function()
+		clean(p)
+		if espOn then
+			task.wait(.1)
+			makeESP(p)
+		end
+	end)
+
+	p.CharacterRemoving:Connect(function()
+		clean(p)
+	end)
+
+	if espOn then
+		makeESP(p)
+	end
+end
+
+for _,p in ipairs(P:GetPlayers()) do
+	setup(p)
+end
+
+P.PlayerAdded:Connect(setup)
+P.PlayerRemoving:Connect(clean)
+
+local function visible(part)
+	if not LP.Character then return false end
+
+	local params=RaycastParams.new()
+	params.FilterType=Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances={LP.Character,part.Parent}
+
+	return workspace:Raycast(
+		CG.CFrame.Position,
+		part.Position-CG.CFrame.Position,
+		params
+	)==nil
+end
+
+local function closest()
+	local target
+	local best=fovSize
+
+	for _,p in ipairs(P:GetPlayers()) do
+		if p~=LP and p.Character and LP.Character then
+			local part=p.Character:FindFirstChild(aimPart)
+			local root=LP.Character:FindFirstChild("HumanoidRootPart")
+
+			if part and root then
+				local dist=(root.Position-part.Position).Magnitude
+
+				if dist<=lockDistance then
+					local pos,on=CG:WorldToViewportPoint(part.Position)
+
+					if on then
+						local center=Vector2.new(
+							CG.ViewportSize.X/2,
+							CG.ViewportSize.Y/2
+						)
+
+						local d=(Vector2.new(pos.X,pos.Y)-center).Magnitude
+
+						if d<best and visible(part) then
+							best=d
+							target=part
+						end
+					end
+				end
+			end
+		end
+	end
+
+	return target
+end
+
+espBtn.Activated:Connect(function()
+	espOn=not espOn
+
+	espBtn.Text=espOn and "ESP PLAYER: ON" or "ESP PLAYER: OFF"
+	espBtn.TextColor3=espOn
+		and Color3.fromRGB(100,255,150)
+		or Color3.fromRGB(255,105,120)
+
+	if espOn then
+		for _,p in ipairs(P:GetPlayers()) do
+			if p~=LP then
+				makeESP(p)
+			end
+		end
+	else
+		tracerOn=false
+		tracerBtn.Text="TRACERS: OFF"
+		tracerBtn.TextColor3=Color3.fromRGB(255,105,120)
+
+		for p in pairs(data) do
+			clean(p)
+		end
+	end
+end)
+
+tracerBtn.Activated:Connect(function()
+	if not espOn then return end
+
+	tracerOn=not tracerOn
+	tracerBtn.Text=tracerOn and "TRACERS: ON" or "TRACERS: OFF"
+	tracerBtn.TextColor3=tracerOn
+		and Color3.fromRGB(100,255,150)
+		or Color3.fromRGB(255,105,120)
+end)
+
+aimBtn.Activated:Connect(function()
+	aimOn=not aimOn
+
+	aimBtn.Text=aimOn and "LOCK AIMBOT: ON" or "LOCK AIMBOT: OFF"
+	aimBtn.TextColor3=aimOn
+		and Color3.fromRGB(100,255,150)
+		or Color3.fromRGB(255,105,120)
+
+	if fovCircle then
+		fovCircle.Visible=aimOn
+	end
+end)
+
+partBtn.Activated:Connect(function()
+	if aimPart=="HumanoidRootPart" then
+		aimPart="Head"
+		partBtn.Text="AIM PART: HEAD"
+	else
+		aimPart="HumanoidRootPart"
+		partBtn.Text="AIM PART: TORSO"
+	end
+end)
+
+fov.FocusLost:Connect(function()
+	local n=tonumber(fov.Text)
+	fovSize=math.clamp(n or 150,10,1000)
+
+	if fovCircle then
+		fovCircle.Radius=fovSize
+	end
+end)
+
+distance.FocusLost:Connect(function()
+	local n=tonumber(distance.Text)
+	lockDistance=math.clamp(n or 300,10,5000)
+end)
+
+local boostOn=false
+local original={}
+
+boost.Activated:Connect(function()
+	boostOn=not boostOn
+
+	boost.Text=boostOn and "BOOST FPS: ON" or "BOOST FPS: OFF"
+	boost.TextColor3=boostOn
+		and Color3.fromRGB(100,255,150)
+		or Color3.fromRGB(255,105,120)
+
+	if boostOn then
+		original.FogStart=Lighting.FogStart
+		original.FogEnd=Lighting.FogEnd
+		original.GlobalShadows=Lighting.GlobalShadows
+
+		Lighting.FogStart=0
+		Lighting.FogEnd=9e9
+		Lighting.GlobalShadows=false
+
+		for _,v in ipairs(Lighting:GetChildren()) do
+			if v:IsA("PostEffect") then
+				v.Enabled=false
+			end
+		end
+
+		for _,v in ipairs(workspace:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.Material=Enum.Material.SmoothPlastic
+			end
+		end
+	else
+		if original.FogStart then
+			Lighting.FogStart=original.FogStart
+			Lighting.FogEnd=original.FogEnd
+			Lighting.GlobalShadows=original.GlobalShadows
+		end
+	end
+end)
+
+local fpsOn=false
+local fpsLabel
+local fpsConn
+
+fps.Activated:Connect(function()
+	fpsOn=not fpsOn
+
+	fps.Text=fpsOn and "SHOW FPS & PING: ON" or "SHOW FPS & PING: OFF"
+	fps.TextColor3=fpsOn
+		and Color3.fromRGB(100,255,150)
+		or Color3.fromRGB(255,105,120)
+
+	if fpsOn then
+		if not fpsLabel then
+			fpsLabel=Instance.new("TextLabel",sg)
+			fpsLabel.Size=UDim2.fromOffset(125,40)
+			fpsLabel.Position=UDim2.fromOffset(15,15)
+			fpsLabel.BackgroundColor3=Color3.fromRGB(15,15,20)
+			fpsLabel.TextColor3=Color3.new(1,1,1)
+			fpsLabel.Font=Enum.Font.Code
+			fpsLabel.TextSize=13
+			fpsLabel.BorderSizePixel=0
+			Instance.new("UICorner",fpsLabel).CornerRadius=UDim.new(0,8)
+			Instance.new("UIStroke",fpsLabel)
+		end
+
+		fpsLabel.Visible=true
+
+		local count=0
+		local last=os.clock()
+
+		if fpsConn then fpsConn:Disconnect() end
+
+		fpsConn=RS.RenderStepped:Connect(function()
+			count+=1
+
+			if os.clock()-last>=1 then
+				local ping=0
+
+				pcall(function()
+					ping=math.floor(
+						Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+					)
+				end)
+
+				fpsLabel.Text="FPS: "..count.."\nPING: "..ping.." ms"
+				count=0
+				last=os.clock()
+			end
+		end)
+	else
+		if fpsConn then
+			fpsConn:Disconnect()
+			fpsConn=nil
+		end
+
+		if fpsLabel then
+			fpsLabel.Visible=false
+		end
+	end
+end)
+
+local mini=Instance.new("TextButton",sg)
+mini.Size=UDim2.fromOffset(50,50)
+mini.Position=UDim2.new(.02,0,.35,0)
+mini.BackgroundColor3=Color3.fromRGB(15,16,22)
+mini.Text="Z7X"
+mini.TextColor3=Color3.new(1,1,1)
+mini.Font=Enum.Font.GothamBlack
+mini.TextSize=14
+mini.Visible=false
+mini.BorderSizePixel=0
+mini.AutoButtonColor=false
+Instance.new("UICorner",mini).CornerRadius=UDim.new(0,13)
+
+local miniStroke=Instance.new("UIStroke",mini)
+miniStroke.Thickness=2
+
+RS.RenderStepped:Connect(function()
+	local c=rgb()
+
+	if fovCircle then
+		fovCircle.Position=Vector2.new(
+			CG.ViewportSize.X/2,
+			CG.ViewportSize.Y/2
+		)
+		fovCircle.Color=c
+	end
+
+	miniStroke.Color=c
+
+	if aimOn then
+		local target=closest()
+
+		if target then
+			CG.CFrame=CFrame.new(
+				CG.CFrame.Position,
+				target.Position
+			)
+		end
+	end
+
+	for p,d in pairs(data) do
+		if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+			if d.highlight then
+				d.highlight.Enabled=espOn
+				d.highlight.FillColor=c
+				d.highlight.OutlineColor=Color3.new(1,1,1)
+			end
+
+			if d.line then
+				if tracerOn then
+					local pos,on=CG:WorldToViewportPoint(
+						p.Character.HumanoidRootPart.Position
+					)
+
+					if on then
+						d.line.From=Vector2.new(
+							CG.ViewportSize.X/2,
+							CG.ViewportSize.Y
+						)
+						d.line.To=Vector2.new(pos.X,pos.Y)
+						d.line.Color=c
+						d.line.Visible=true
+					else
+						d.line.Visible=false
+					end
+				else
+					d.line.Visible=false
+				end
+			end
+		end
+	end
+end)
+
+local function drag(obj)
+	local active=false
+	local start
+	local pos
+
+	obj.InputBegan:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1
+		or i.UserInputType==Enum.UserInputType.Touch then
+			active=true
+			start=i.Position
+			pos=obj.Position
+		end
+	end)
+
+	UIS.InputChanged:Connect(function(i)
+		if active and (
+			i.UserInputType==Enum.UserInputType.MouseMovement
+			or i.UserInputType==Enum.UserInputType.Touch
+		) then
+			local d=i.Position-start
+
+			obj.Position=UDim2.new(
+				pos.X.Scale,pos.X.Offset+d.X,
+				pos.Y.Scale,pos.Y.Offset+d.Y
+			)
+		end
+	end)
+
+	UIS.InputEnded:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1
+		or i.UserInputType==Enum.UserInputType.Touch then
+			active=false
+		end
+	end)
+end
+
+drag(main)
+drag(mini)
+
+local openSize=UDim2.fromOffset(287,294)
+
+local function openMenu()
+	main.Visible=true
+	main.Size=UDim2.fromOffset(287,0)
+
+	TS:Create(
+		main,
+		TweenInfo.new(.32,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),
+		{Size=openSize}
+	):Play()
+end
+
+local function closeMenu()
+	local t=TS:Create(
+		main,
+		TweenInfo.new(.25,Enum.EasingStyle.Quint,Enum.EasingDirection.In),
+		{Size=UDim2.fromOffset(287,0)}
+	)
+
+	t:Play()
+
+	t.Completed:Connect(function()
+		if main.Parent then
+			main.Visible=false
+			mini.Visible=true
+		end
+	end)
+end
+
+min.Activated:Connect(function()
+	click()
+	closeMenu()
+end)
+
+mini.Activated:Connect(function()
+	click()
+	mini.Visible=false
+	openMenu()
+end)
+
+close.Activated:Connect(function()
+	click()
+
+	if fpsConn then
+		fpsConn:Disconnect()
+	end
+
+	if fovCircle then
+		pcall(function()
+			fovCircle:Remove()
+		end)
+	end
+
+	for p in pairs(data) do
+		clean(p)
+	end
+
+	local t=TS:Create(
+		main,
+		TweenInfo.new(.25,Enum.EasingStyle.Quint,Enum.EasingDirection.In),
+		{Size=UDim2.fromOffset(287,0)}
+	)
+
+	t:Play()
+
+	t.Completed:Connect(function()
+		sg:Destroy()
+	end)
+end)
+
+ab.Activated:Connect(click)
+
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	content.CanvasSize=UDim2.fromOffset(
+		0,
+		layout.AbsoluteContentSize.Y+6
+	)
+end)
