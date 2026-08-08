@@ -1,0 +1,1788 @@
+local LP, TS, RS, P, CG, UIS =
+    game:GetService("Players").LocalPlayer,
+    game:GetService("TweenService"),
+    game:GetService("RunService"),
+    game:GetService("Players"),
+    game:GetService("Workspace").CurrentCamera,
+    game:GetService("UserInputService")
+
+local Stats = game:GetService("Stats")
+local Lighting = game:GetService("Lighting")
+
+local sg = Instance.new("ScreenGui")
+sg.Name = "Z7X_MENU"
+sg.ResetOnSpawn = false
+sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+sg.Parent = LP:WaitForChild("PlayerGui")
+
+--==================================================
+-- CLICK SOUND
+--==================================================
+
+local clickSound = Instance.new("Sound")
+clickSound.Name = "UniversalClickSound"
+clickSound.SoundId = "rbxassetid://6026984224"
+clickSound.Volume = 0.45
+clickSound.Parent = sg
+
+local function playClick()
+    clickSound:Stop()
+    clickSound.TimePosition = 0
+    clickSound:Play()
+end
+
+--==================================================
+-- PERFORMANCE SYSTEM
+--==================================================
+
+local OriginalSettings = {}
+local FpsBoostEnabled = false
+local FpsConnection = nil
+local FpsLabel = nil
+
+local function ToggleBoostFPS(state)
+    FpsBoostEnabled = state
+
+    if FpsBoostEnabled then
+        OriginalSettings.FogStart = Lighting.FogStart
+        OriginalSettings.FogEnd = Lighting.FogEnd
+        OriginalSettings.GlobalShadows = Lighting.GlobalShadows
+
+        Lighting.FogStart = 0
+        Lighting.FogEnd = 9e9
+        Lighting.GlobalShadows = false
+
+        for _, effect in pairs(Lighting:GetChildren()) do
+            if effect:IsA("PostEffect") then
+                effect.Enabled = false
+            end
+        end
+
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("BasePart") and not obj:IsA("Terrain") then
+                obj.Material = Enum.Material.SmoothPlastic
+            end
+        end
+    else
+        if OriginalSettings.FogStart ~= nil then
+            Lighting.FogStart = OriginalSettings.FogStart
+            Lighting.FogEnd = OriginalSettings.FogEnd
+            Lighting.GlobalShadows = OriginalSettings.GlobalShadows
+        end
+    end
+end
+
+local function ToggleFpsCounter(state)
+    if state then
+        if not FpsLabel then
+            FpsLabel = Instance.new("TextLabel")
+            FpsLabel.Name = "FPS_COUNTER"
+            FpsLabel.Size = UDim2.new(0,140,0,45)
+            FpsLabel.Position = UDim2.new(0.05,0,0.05,0)
+            FpsLabel.BackgroundColor3 = Color3.fromRGB(15,15,15)
+            FpsLabel.TextColor3 = Color3.fromRGB(255,255,255)
+            FpsLabel.Font = Enum.Font.Code
+            FpsLabel.TextSize = 14
+            FpsLabel.BorderSizePixel = 0
+            FpsLabel.ZIndex = 50
+            FpsLabel.TextXAlignment = Enum.TextXAlignment.Center
+            FpsLabel.Parent = sg
+
+            local lbCorner = Instance.new("UICorner")
+            lbCorner.CornerRadius = UDim.new(0,8)
+            lbCorner.Parent = FpsLabel
+
+            local fpsStroke = Instance.new("UIStroke")
+            fpsStroke.Thickness = 1.8
+            fpsStroke.Parent = FpsLabel
+
+            local fpsCount = 0
+            local lastUpdate = os.clock()
+
+            FpsConnection = RS.RenderStepped:Connect(function()
+                fpsCount += 1
+
+                if os.clock() - lastUpdate >= 1 then
+                    local ping = 0
+
+                    pcall(function()
+                        ping = math.floor(
+                            Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+                        )
+                    end)
+
+                    FpsLabel.Text =
+                        "FPS: " .. fpsCount ..
+                        "\nPING: " .. ping .. " ms"
+
+                    fpsCount = 0
+                    lastUpdate = os.clock()
+                end
+
+                fpsStroke.Color =
+                    Color3.fromHSV((os.clock() * 0.4) % 1,1,1)
+            end)
+        end
+
+        FpsLabel.Visible = true
+    else
+        if FpsConnection then
+            FpsConnection:Disconnect()
+            FpsConnection = nil
+        end
+
+        if FpsLabel then
+            FpsLabel.Visible = false
+        end
+    end
+end
+
+--==================================================
+-- HORROR INTRO
+--==================================================
+
+local text = Instance.new("TextLabel")
+text.Parent = sg
+text.Size = UDim2.new(0,500,0,100)
+text.Position = UDim2.new(0.5,-250,0.45,-50)
+text.BackgroundTransparency = 1
+text.Text = "by:jbgxdc"
+text.Font = Enum.Font.GothamBold
+text.TextSize = 60
+text.TextTransparency = 0
+
+local timer = tick()
+local horrorConn
+
+horrorConn = RS.RenderStepped:Connect(function()
+    if tick() - timer >= 2 then
+        horrorConn:Disconnect()
+        text:Destroy()
+    else
+        if (tick() * 25) % 2 < 1 then
+            text.TextColor3 = Color3.fromRGB(0,0,0)
+        else
+            text.TextColor3 = Color3.fromRGB(255,255,255)
+        end
+    end
+end)
+
+repeat
+    task.wait()
+until tick() - timer >= 2
+
+--==================================================
+-- MAIN WINDOW
+--==================================================
+
+local main = Instance.new("Frame")
+main.Name = "MainWindow"
+main.Parent = sg
+main.Size = UDim2.new(0,410,0,420)
+main.Position = UDim2.new(0.5,-205,0.5,-210)
+main.BackgroundColor3 = Color3.fromRGB(12,13,18)
+main.BackgroundTransparency = 0.04
+main.BorderSizePixel = 0
+main.ClipsDescendants = true
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0,18)
+mainCorner.Parent = main
+
+local stroke = Instance.new("UIStroke")
+stroke.Parent = main
+stroke.Thickness = 1.5
+stroke.Transparency = 0.25
+
+local rgbLine = Instance.new("Frame")
+rgbLine.Parent = main
+rgbLine.Size = UDim2.new(1,0,0,3)
+rgbLine.Position = UDim2.new(0,0,0,0)
+rgbLine.BorderSizePixel = 0
+
+--==================================================
+-- ANIME IMAGE AREA
+-- ใส่ Asset ID ของรูปอนิเมะตรงนี้
+--==================================================
+
+local animeImage = Instance.new("ImageLabel")
+animeImage.Name = "AnimeImage"
+animeImage.Parent = main
+animeImage.Size = UDim2.new(0,105,0,105)
+animeImage.Position = UDim2.new(1,-120,0,75)
+animeImage.BackgroundColor3 = Color3.fromRGB(20,21,29)
+animeImage.BackgroundTransparency = 0.15
+animeImage.BorderSizePixel = 0
+animeImage.Image = ""
+animeImage.ImageTransparency = 0.12
+animeImage.ScaleType = Enum.ScaleType.Crop
+animeImage.ZIndex = 1
+
+local animeCorner = Instance.new("UICorner")
+animeCorner.CornerRadius = UDim.new(0,14)
+animeCorner.Parent = animeImage
+
+local animeStroke = Instance.new("UIStroke")
+animeStroke.Thickness = 1.5
+animeStroke.Transparency = 0.2
+animeStroke.Parent = animeImage
+
+--==================================================
+-- RGB ANIMATION
+--==================================================
+
+task.spawn(function()
+    while sg.Parent do
+        local hue = (os.clock() * 0.2) % 1
+        local rgb = Color3.fromHSV(hue,1,1)
+
+        rgbLine.BackgroundColor3 = rgb
+        stroke.Color = rgb
+        animeStroke.Color = rgb
+
+        task.wait()
+    end
+end)
+
+--==================================================
+-- HEADER
+--==================================================
+
+local bar = Instance.new("Frame")
+bar.Parent = main
+bar.Size = UDim2.new(1,0,0,58)
+bar.Position = UDim2.new(0,0,0,3)
+bar.BackgroundTransparency = 1
+bar.ZIndex = 5
+
+local icon = Instance.new("TextLabel")
+icon.Parent = bar
+icon.Size = UDim2.new(0,38,0,38)
+icon.Position = UDim2.new(0,14,0,9)
+icon.BackgroundColor3 = Color3.fromRGB(30,31,40)
+icon.Text = "Z"
+icon.Font = Enum.Font.GothamBlack
+icon.TextSize = 20
+icon.TextColor3 = Color3.fromRGB(255,255,255)
+icon.BorderSizePixel = 0
+icon.ZIndex = 6
+
+local iconCorner = Instance.new("UICorner")
+iconCorner.CornerRadius = UDim.new(0,11)
+iconCorner.Parent = icon
+
+local title = Instance.new("TextLabel")
+title.Parent = bar
+title.Size = UDim2.new(1,-145,0,26)
+title.Position = UDim2.new(0,62,0,9)
+title.BackgroundTransparency = 1
+title.Text = "Z7X MENU"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 19
+title.TextColor3 = Color3.fromRGB(245,245,255)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.ZIndex = 6
+
+local subtitle = Instance.new("TextLabel")
+subtitle.Parent = bar
+subtitle.Size = UDim2.new(1,-145,0,18)
+subtitle.Position = UDim2.new(0,63,0,31)
+subtitle.BackgroundTransparency = 1
+subtitle.Text = "PLAYER CONTROL PANEL"
+subtitle.Font = Enum.Font.GothamMedium
+subtitle.TextSize = 9
+subtitle.TextColor3 = Color3.fromRGB(130,135,150)
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+subtitle.ZIndex = 6
+
+--==================================================
+-- HEADER BUTTONS
+--==================================================
+
+local minBtn = Instance.new("TextButton")
+minBtn.Parent = bar
+minBtn.Size = UDim2.new(0,34,0,34)
+minBtn.Position = UDim2.new(1,-82,0,11)
+minBtn.Text = "—"
+minBtn.Font = Enum.Font.GothamBold
+minBtn.TextSize = 16
+minBtn.TextColor3 = Color3.fromRGB(190,195,210)
+minBtn.BackgroundColor3 = Color3.fromRGB(28,30,39)
+minBtn.BorderSizePixel = 0
+minBtn.AutoButtonColor = false
+minBtn.ZIndex = 7
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(0,10)
+minCorner.Parent = minBtn
+
+local clsBtn = Instance.new("TextButton")
+clsBtn.Parent = bar
+clsBtn.Size = UDim2.new(0,34,0,34)
+clsBtn.Position = UDim2.new(1,-42,0,11)
+clsBtn.Text = "×"
+clsBtn.Font = Enum.Font.GothamBold
+clsBtn.TextSize = 20
+clsBtn.TextColor3 = Color3.fromRGB(255,130,140)
+clsBtn.BackgroundColor3 = Color3.fromRGB(45,25,30)
+clsBtn.BorderSizePixel = 0
+clsBtn.AutoButtonColor = false
+clsBtn.ZIndex = 7
+
+local clsCorner = Instance.new("UICorner")
+clsCorner.CornerRadius = UDim.new(0,10)
+clsCorner.Parent = clsBtn
+
+--==================================================
+-- BUTTON HOVER EFFECT
+--==================================================
+
+local function headerHover(btn, normalColor, hoverColor)
+    btn.MouseEnter:Connect(function()
+        TS:Create(
+            btn,
+            TweenInfo.new(0.12, Enum.EasingStyle.Quad),
+            {
+                BackgroundColor3 = hoverColor,
+                Size = UDim2.new(0,36,0,36)
+            }
+        ):Play()
+    end)
+
+    btn.MouseLeave:Connect(function()
+        TS:Create(
+            btn,
+            TweenInfo.new(0.12, Enum.EasingStyle.Quad),
+            {
+                BackgroundColor3 = normalColor,
+                Size = UDim2.new(0,34,0,34)
+            }
+        ):Play()
+    end)
+end
+
+headerHover(
+    minBtn,
+    Color3.fromRGB(28,30,39),
+    Color3.fromRGB(42,45,58)
+)
+
+headerHover(
+    clsBtn,
+    Color3.fromRGB(45,25,30),
+    Color3.fromRGB(65,30,38)
+)
+
+--==================================================
+-- SEPARATOR
+--==================================================
+
+local separator = Instance.new("Frame")
+separator.Parent = main
+separator.Size = UDim2.new(1,-28,0,1)
+separator.Position = UDim2.new(0,14,0,62)
+separator.BackgroundColor3 = Color3.fromRGB(40,42,53)
+separator.BorderSizePixel = 0
+separator.ZIndex = 4
+
+--==================================================
+-- CONTENT
+--==================================================
+
+local content = Instance.new("Frame")
+content.Name = "Content"
+content.Parent = main
+content.Size = UDim2.new(1,-28,1,-75)
+content.Position = UDim2.new(0,14,0,70)
+content.BackgroundTransparency = 1
+content.ZIndex = 5
+
+--==================================================
+-- BUTTON CREATOR
+--==================================================
+
+local function createBtn(class, txt, pos)
+
+    local b = Instance.new(class)
+
+    b.Parent = content
+    b.Size = UDim2.new(1,0,0,43)
+    b.Position = pos
+    b.BackgroundColor3 = Color3.fromRGB(24,26,34)
+    b.BorderSizePixel = 0
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 13
+    b.ZIndex = 10
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0,11)
+    corner.Parent = b
+
+    local outline = Instance.new("UIStroke")
+    outline.Parent = b
+    outline.Thickness = 1
+    outline.Transparency = 0.55
+    outline.Color = Color3.fromRGB(55,58,72)
+
+    if class == "TextButton" then
+
+        b.Text = txt
+        b.TextColor3 = Color3.fromRGB(255,105,120)
+        b.AutoButtonColor = false
+
+        b.MouseEnter:Connect(function()
+
+            TS:Create(
+                b,
+                TweenInfo.new(0.12, Enum.EasingStyle.Quad),
+                {
+                    BackgroundColor3 = Color3.fromRGB(32,34,45),
+                    Size = UDim2.new(1,4,0,43)
+                }
+            ):Play()
+
+            TS:Create(
+                outline,
+                TweenInfo.new(0.12),
+                {
+                    Transparency = 0.15
+                }
+            ):Play()
+
+        end)
+
+        b.MouseLeave:Connect(function()
+
+            TS:Create(
+                b,
+                TweenInfo.new(0.12, Enum.EasingStyle.Quad),
+                {
+                    BackgroundColor3 = Color3.fromRGB(24,26,34),
+                    Size = UDim2.new(1,0,0,43)
+                }
+            ):Play()
+
+            TS:Create(
+                outline,
+                TweenInfo.new(0.12),
+                {
+                    Transparency = 0.55
+                }
+            ):Play()
+
+        end)
+
+        b.MouseButton1Down:Connect(function()
+
+            TS:Create(
+                b,
+                TweenInfo.new(0.06),
+                {
+                    Size = UDim2.new(1,1,0,41)
+                }
+            ):Play()
+
+        end)
+
+        b.MouseButton1Up:Connect(function()
+
+            TS:Create(
+                b,
+                TweenInfo.new(0.08),
+                {
+                    Size = UDim2.new(1,4,0,43)
+                }
+            ):Play()
+
+        end)
+
+    else
+
+        b.PlaceholderText = txt
+        b.Text = ""
+        b.TextColor3 = Color3.fromRGB(235,235,245)
+        b.PlaceholderColor3 = Color3.fromRGB(120,125,140)
+        b.ClearTextOnFocus = false
+        b.TextXAlignment = Enum.TextXAlignment.Left
+
+        local padding = Instance.new("UIPadding")
+        padding.Parent = b
+        padding.PaddingLeft = UDim.new(0,14)
+        padding.PaddingRight = UDim.new(0,14)
+
+        b.Focused:Connect(function()
+
+            playClick()
+
+            TS:Create(
+                b,
+                TweenInfo.new(0.15),
+                {
+                    BackgroundColor3 = Color3.fromRGB(30,32,42)
+                }
+            ):Play()
+
+            TS:Create(
+                outline,
+                TweenInfo.new(0.15),
+                {
+                    Transparency = 0.1
+                }
+            ):Play()
+
+        end)
+
+        b.FocusLost:Connect(function()
+
+            TS:Create(
+                b,
+                TweenInfo.new(0.15),
+                {
+                    BackgroundColor3 = Color3.fromRGB(24,26,34)
+                }
+            ):Play()
+
+            TS:Create(
+                outline,
+                TweenInfo.new(0.15),
+                {
+                    Transparency = 0.55
+                }
+            ):Play()
+
+        end)
+
+    end
+
+    return b
+end
+
+--==================================================
+-- PERFORMANCE BUTTONS
+--==================================================
+
+local bsfState = false
+
+local boostFpsBtn = createBtn(
+    "TextButton",
+    "BOOST FPS: OFF",
+    UDim2.new(0,0,0,0)
+)
+
+boostFpsBtn.TextColor3 =
+    Color3.fromRGB(255,105,120)
+
+boostFpsBtn.MouseButton1Click:Connect(function()
+
+    playClick()
+
+    bsfState = not bsfState
+
+    ToggleBoostFPS(bsfState)
+
+    if bsfState then
+
+        boostFpsBtn.Text = "BOOST FPS: ON"
+
+        boostFpsBtn.TextColor3 =
+            Color3.fromRGB(105,255,120)
+
+    else
+
+        boostFpsBtn.Text = "BOOST FPS: OFF"
+
+        boostFpsBtn.TextColor3 =
+            Color3.fromRGB(255,105,120)
+
+    end
+
+end)
+
+local fpsState = false
+
+local rgbFpsBtn = createBtn(
+    "TextButton",
+    "SHOW FPS & PING: OFF",
+    UDim2.new(0,0,0,49)
+)
+
+rgbFpsBtn.TextColor3 =
+    Color3.fromRGB(255,105,120)
+
+rgbFpsBtn.MouseButton1Click:Connect(function()
+
+    playClick()
+
+    fpsState = not fpsState
+
+    ToggleFpsCounter(fpsState)
+
+    if fpsState then
+
+        rgbFpsBtn.Text =
+            "SHOW FPS & PING: ON"
+
+        rgbFpsBtn.TextColor3 =
+            Color3.fromRGB(105,255,120)
+
+    else
+
+        rgbFpsBtn.Text =
+            "SHOW FPS & PING: OFF"
+
+        rgbFpsBtn.TextColor3 =
+            Color3.fromRGB(255,105,120)
+
+    end
+
+end)
+
+--==================================================
+-- DEVELOPMENT BUTTON
+--==================================================
+
+local devBtn = createBtn(
+    "TextButton",
+    "กำลังพัฒนา...",
+    UDim2.new(0,0,0,98)
+)
+
+devBtn.TextColor3 =
+    Color3.fromRGB(140,145,160)
+
+devBtn.MouseButton1Click:Connect(function()
+
+    playClick()
+
+    TS:Create(
+        devBtn,
+        TweenInfo.new(0.08),
+        {
+            BackgroundColor3 =
+                Color3.fromRGB(38,40,52)
+        }
+    ):Play()
+
+    task.delay(0.1,function()
+
+        if devBtn and devBtn.Parent then
+
+            TS:Create(
+                devBtn,
+                TweenInfo.new(0.12),
+                {
+                    BackgroundColor3 =
+                        Color3.fromRGB(24,26,34)
+                }
+            ):Play()
+
+        end
+
+    end)
+
+end)
+
+--==================================================
+-- MINI TOGGLE BUTTON
+--==================================================
+
+local toggleFrame = Instance.new("TextButton")
+toggleFrame.Name = "Z7X_Toggle"
+toggleFrame.Parent = sg
+toggleFrame.Size = UDim2.new(0,55,0,55)
+toggleFrame.Position = UDim2.new(0.02,0,0.3,0)
+toggleFrame.BackgroundColor3 = Color3.fromRGB(15,16,22)
+toggleFrame.Text = "Z7X"
+toggleFrame.Font = Enum.Font.GothamBlack
+toggleFrame.TextSize = 16
+toggleFrame.TextColor3 = Color3.fromRGB(255,255,255)
+toggleFrame.Visible = false
+toggleFrame.BorderSizePixel = 0
+toggleFrame.AutoButtonColor = false
+toggleFrame.ZIndex = 100
+
+local tCorner = Instance.new("UICorner")
+tCorner.CornerRadius = UDim.new(0,14)
+tCorner.Parent = toggleFrame
+
+local tStroke = Instance.new("UIStroke")
+tStroke.Thickness = 2
+tStroke.Transparency = 0.1
+tStroke.Parent = toggleFrame
+
+--==================================================
+-- MINI RGB
+--==================================================
+
+task.spawn(function()
+
+    while sg.Parent do
+
+        local hue =
+            (os.clock() * 0.2) % 1
+
+        local rgb =
+            Color3.fromHSV(hue,1,1)
+
+        tStroke.Color = rgb
+
+        if toggleFrame.Visible then
+            toggleFrame.TextColor3 = rgb
+        end
+
+        task.wait()
+
+    end
+
+end)
+
+--==================================================
+-- MINI HOVER
+--==================================================
+
+toggleFrame.MouseEnter:Connect(function()
+
+    TS:Create(
+        toggleFrame,
+        TweenInfo.new(0.15),
+        {
+            Size = UDim2.new(0,60,0,60)
+        }
+    ):Play()
+
+end)
+
+toggleFrame.MouseLeave:Connect(function()
+
+    TS:Create(
+        toggleFrame,
+        TweenInfo.new(0.15),
+        {
+            Size = UDim2.new(0,55,0,55)
+        }
+    ):Play()
+
+end)
+
+--==================================================
+-- 3/5 : CONTROLS + ESP / TRACERS / AIM SYSTEM
+--==================================================
+local espOn = false
+local trcOn = false
+local aimOn = false
+local aimPart = "HumanoidRootPart"
+local lockDistance = 300
+local db = {}
+--==================================================
+-- CONTROL BUTTONS
+--==================================================
+local espBtn = createBtn(
+    "TextButton",
+    "ESP PLAYER: OFF",
+    UDim2.new(0,0,0,0)
+)
+local trcBtn = createBtn(
+    "TextButton",
+    "TRACERS LINE: OFF",
+    UDim2.new(0,0,0,49)
+)
+trcBtn.Visible = false
+local aimBtn = createBtn(
+    "TextButton",
+    "LOCK AIMBOT: OFF",
+    UDim2.new(0,0,0,98)
+)
+local partBtn = createBtn(
+    "TextButton",
+    "AIM PART: TORSO",
+    UDim2.new(0,0,0,147)
+)
+partBtn.TextColor3 = Color3.fromRGB(230,235,245)
+local fovInp = createBtn(
+    "TextBox",
+    "FOV SIZE   •   DEFAULT 150",
+    UDim2.new(0,0,0,196)
+)
+local lockDistInp = createBtn(
+    "TextBox",
+    "LOCK DISTANCE   •   DEFAULT 300",
+    UDim2.new(0,0,0,245)
+)
+--==================================================
+-- BUTTON STYLE
+--==================================================
+local function hoverButton(btn)
+    btn.MouseEnter:Connect(function()
+        TS:Create(
+            btn,
+            TweenInfo.new(0.12),
+            {
+                BackgroundColor3 =
+                    Color3.fromRGB(34,36,48)
+            }
+        ):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TS:Create(
+            btn,
+            TweenInfo.new(0.12),
+            {
+                BackgroundColor3 =
+                    Color3.fromRGB(24,26,34)
+            }
+        ):Play()
+    end)
+end
+hoverButton(espBtn)
+hoverButton(trcBtn)
+hoverButton(aimBtn)
+hoverButton(partBtn)
+--==================================================
+-- CLICK SOUND
+--==================================================
+local soundButtons = {
+    espBtn,
+    trcBtn,
+    aimBtn,
+    partBtn,
+    minBtn,
+    clsBtn,
+    toggleFrame
+}
+for _,button in ipairs(soundButtons) do
+    button.MouseButton1Click:Connect(function()
+        playClick()
+    end)
+end
+fovInp.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        playClick()
+    end
+end)
+lockDistInp.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        playClick()
+    end
+end)
+--==================================================
+-- FOV CIRCLE
+--==================================================
+local fovCircle = Drawing.new("Circle")
+fovCircle.Thickness = 1.5
+fovCircle.NumSides = 60
+fovCircle.Filled = false
+fovCircle.Visible = false
+fovCircle.Radius = 150
+--==================================================
+-- VISIBILITY CHECK
+--==================================================
+local function isVisible(targetPart)
+    if not LP.Character
+    or not LP.Character:FindFirstChild("HumanoidRootPart") then
+        return false
+    end
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = {
+        LP.Character,
+        targetPart.Parent
+    }
+    return workspace:Raycast(
+        CG.CFrame.Position,
+        targetPart.Position - CG.CFrame.Position,
+        params
+    ) == nil
+end
+--==================================================
+-- CLEAN PLAYER
+--==================================================
+local function clean(p)
+    if db[p] then
+        if db[p].hl then
+            db[p].hl:Destroy()
+        end
+        if db[p].li then
+            db[p].li:Remove()
+        end
+        db[p] = nil
+    end
+end
+--==================================================
+-- ADD ESP
+--==================================================
+local function addESP(p)
+    if p == LP then
+        return
+    end
+    p.CharacterAdded:Connect(function(c)
+        clean(p)
+        if espOn then
+            local line = Drawing.new("Line")
+            line.Thickness = 1.5
+            line.Transparency = 1
+            line.Visible = false
+            local highlight = Instance.new("Highlight")
+            highlight.Parent = c
+            highlight.FillTransparency = 0.45
+            highlight.OutlineTransparency = 0
+            db[p] = {
+                hl = highlight,
+                li = line
+            }
+        end
+    end)
+    p.CharacterRemoving:Connect(function()
+        clean(p)
+    end)
+end
+--==================================================
+-- CLOSEST TARGET
+--==================================================
+local function getClosestInFOV()
+    local target = nil
+    local closest = fovCircle.Radius
+    for _,v in pairs(P:GetPlayers()) do
+        if v ~= LP
+        and v.Character
+        and v.Character:FindFirstChild(aimPart)
+        and LP.Character
+        and LP.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPart =
+                v.Character[aimPart]
+            local distance =
+                (
+                    LP.Character.HumanoidRootPart.Position
+                    - targetPart.Position
+                ).Magnitude
+            if distance <= lockDistance then
+                local pos,onScreen =
+                    CG:WorldToViewportPoint(
+                        targetPart.Position
+                    )
+                if onScreen then
+                    local screenDistance =
+                        (
+                            Vector2.new(pos.X,pos.Y)
+                            - fovCircle.Position
+                        ).Magnitude
+                    if screenDistance < closest
+                    and isVisible(targetPart) then
+                        closest = screenDistance
+                        target = targetPart
+                    end
+                end
+            end
+        end
+    end
+    return target
+end
+--==================================================
+-- INPUT VALUES
+--==================================================
+fovInp.FocusLost:Connect(function()
+    local value = tonumber(fovInp.Text)
+    if value then
+        fovCircle.Radius =
+            math.clamp(value,10,1000)
+    else
+        fovCircle.Radius = 150
+    end
+end)
+lockDistInp.FocusLost:Connect(function()
+    local value = tonumber(lockDistInp.Text)
+    if value then
+        lockDistance =
+            math.clamp(value,10,5000)
+    else
+        lockDistance = 300
+    end
+end)
+--==================================================
+-- ESP BUTTON
+--==================================================
+espBtn.MouseButton1Click:Connect(function()
+    espOn = not espOn
+    espBtn.Text =
+        espOn
+        and "ESP PLAYER: ON"
+        or "ESP PLAYER: OFF"
+    espBtn.TextColor3 =
+        espOn
+        and Color3.fromRGB(100,255,150)
+        or Color3.fromRGB(255,105,120)
+    trcBtn.Visible = espOn
+    if espOn then
+        for _,v in pairs(P:GetPlayers()) do
+            if v ~= LP
+            and v.Character then
+                clean(v)
+                local line = Drawing.new("Line")
+                line.Thickness = 1.5
+                line.Transparency = 1
+                line.Visible = false
+                local highlight =
+                    Instance.new("Highlight")
+                highlight.Parent = v.Character
+                highlight.FillTransparency = 0.45
+                highlight.OutlineTransparency = 0
+                db[v] = {
+                    hl = highlight,
+                    li = line
+                }
+            end
+        end
+    else
+        trcOn = false
+        trcBtn.Text =
+            "TRACERS LINE: OFF"
+        trcBtn.TextColor3 =
+            Color3.fromRGB(255,105,120)
+        for _,v in pairs(P:GetPlayers()) do
+            clean(v)
+        end
+    end
+end)
+--==================================================
+-- TRACERS BUTTON
+--==================================================
+trcBtn.MouseButton1Click:Connect(function()
+    if not espOn then
+        return
+    end
+    trcOn = not trcOn
+    trcBtn.Text =
+        trcOn
+        and "TRACERS LINE: ON"
+        or "TRACERS LINE: OFF"
+    trcBtn.TextColor3 =
+        trcOn
+        and Color3.fromRGB(100,255,150)
+        or Color3.fromRGB(255,105,120)
+end)
+--==================================================
+-- AIMBOT BUTTON
+--==================================================
+aimBtn.MouseButton1Click:Connect(function()
+    aimOn = not aimOn
+    aimBtn.Text =
+        aimOn
+        and "LOCK AIMBOT: ON"
+        or "LOCK AIMBOT: OFF"
+    aimBtn.TextColor3 =
+        aimOn
+        and Color3.fromRGB(100,255,150)
+        or Color3.fromRGB(255,105,120)
+    fovCircle.Visible = aimOn
+end)
+--==================================================
+-- AIM PART BUTTON
+--==================================================
+partBtn.MouseButton1Click:Connect(function()
+    if aimPart == "HumanoidRootPart" then
+        aimPart = "Head"
+    else
+        aimPart = "HumanoidRootPart"
+    end
+    partBtn.Text =
+        "AIM PART: "
+        .. (
+            aimPart == "Head"
+            and "HEAD"
+            or "TORSO"
+        )
+end)
+--==================================================
+-- PLAYER CONNECTIONS
+--==================================================
+for _,p in pairs(P:GetPlayers()) do
+    addESP(p)
+end
+P.PlayerAdded:Connect(addESP)
+P.PlayerRemoving:Connect(function(p)
+    clean(p)
+end)
+
+--==================================================
+-- 4/5 : MAIN LOOP + FOV + ESP + TRACERS + DRAG
+--==================================================
+
+--==================================================
+-- MAIN RENDER LOOP
+--==================================================
+
+RS.RenderStepped:Connect(function()
+
+    if not sg or not sg.Parent then
+        return
+    end
+
+    local rgb =
+        Color3.fromHSV(
+            (os.clock() % 3) / 3,
+            1,
+            1
+        )
+
+    -- FOV POSITION
+    fovCircle.Position =
+        Vector2.new(
+            CG.ViewportSize.X / 2,
+            CG.ViewportSize.Y / 2
+        )
+
+    fovCircle.Color = rgb
+
+    --==================================================
+    -- AIM LOCK
+    --==================================================
+
+    if aimOn then
+
+        local target =
+            getClosestInFOV()
+
+        if target then
+
+            CG.CFrame =
+                CFrame.new(
+                    CG.CFrame.Position,
+                    target.Position
+                )
+
+            if UIS.MouseBehavior ~= Enum.MouseBehavior.Default then
+
+                UIS.MouseBehavior =
+                    Enum.MouseBehavior.Default
+
+            end
+
+        end
+
+    end
+
+    --==================================================
+    -- ESP / TRACERS UPDATE
+    --==================================================
+
+    for player,data in pairs(db) do
+
+        if player
+        and player.Character
+        and player.Character:FindFirstChild("HumanoidRootPart") then
+
+            -- ESP
+            if espOn and data.hl then
+
+                data.hl.Enabled = true
+
+                data.hl.FillColor = rgb
+
+                data.hl.OutlineColor =
+                    Color3.fromRGB(
+                        255,
+                        255,
+                        255
+                    )
+
+                data.hl.FillTransparency = 0.45
+
+                data.hl.OutlineTransparency = 0
+
+            elseif data.hl then
+
+                data.hl.Enabled = false
+
+            end
+
+            -- TRACERS
+            if trcOn and data.li then
+
+                local root =
+                    player.Character:FindFirstChild(
+                        "HumanoidRootPart"
+                    )
+
+                if root then
+
+                    local pos,onScreen =
+                        CG:WorldToViewportPoint(
+                            root.Position
+                        )
+
+                    if onScreen then
+
+                        data.li.From =
+                            Vector2.new(
+                                CG.ViewportSize.X / 2,
+                                CG.ViewportSize.Y
+                            )
+
+                        data.li.To =
+                            Vector2.new(
+                                pos.X,
+                                pos.Y
+                            )
+
+                        data.li.Color = rgb
+
+                        data.li.Thickness = 1.5
+
+                        data.li.Visible = true
+
+                    else
+
+                        data.li.Visible = false
+
+                    end
+
+                else
+
+                    data.li.Visible = false
+
+                end
+
+            elseif data.li then
+
+                data.li.Visible = false
+
+            end
+
+        else
+
+            if data.li then
+                data.li.Visible = false
+            end
+
+            if data.hl then
+                data.hl.Enabled = false
+            end
+
+        end
+
+    end
+
+end)
+
+--==================================================
+-- WINDOW RGB BORDER
+--==================================================
+
+local borderConnection
+
+borderConnection =
+    RS.RenderStepped:Connect(function()
+
+        if not sg or not sg.Parent then
+
+            if borderConnection then
+                borderConnection:Disconnect()
+            end
+
+            return
+
+        end
+
+        local rgb =
+            Color3.fromHSV(
+                (os.clock() * 0.2) % 1,
+                1,
+                1
+            )
+
+        if rgbLine then
+            rgbLine.BackgroundColor3 = rgb
+        end
+
+        if stroke then
+            stroke.Color = rgb
+        end
+
+        if tStroke then
+            tStroke.Color = rgb
+        end
+
+    end)
+
+--==================================================
+-- DRAG SYSTEM
+--==================================================
+
+local function makeDraggable(guiObject)
+
+    local dragging = false
+    local dragInput = nil
+    local dragStart = nil
+    local startPos = nil
+
+    guiObject.InputBegan:Connect(function(input)
+
+        if input.UserInputType ==
+            Enum.UserInputType.MouseButton1
+        or input.UserInputType ==
+            Enum.UserInputType.Touch then
+
+            dragging = true
+
+            dragStart =
+                input.Position
+
+            startPos =
+                guiObject.Position
+
+            input.Changed:Connect(function()
+
+                if input.UserInputState ==
+                    Enum.UserInputState.End then
+
+                    dragging = false
+
+                end
+
+            end)
+
+        end
+
+    end)
+
+    guiObject.InputChanged:Connect(function(input)
+
+        if input.UserInputType ==
+            Enum.UserInputType.MouseMovement
+        or input.UserInputType ==
+            Enum.UserInputType.Touch then
+
+            dragInput = input
+
+        end
+
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+
+        if input == dragInput
+        and dragging
+        and startPos
+        and dragStart then
+
+            local delta =
+                input.Position - dragStart
+
+            guiObject.Position =
+                UDim2.new(
+                    startPos.X.Scale,
+                    startPos.X.Offset + delta.X,
+
+                    startPos.Y.Scale,
+                    startPos.Y.Offset + delta.Y
+                )
+
+        end
+
+    end)
+
+end
+
+--==================================================
+-- DRAG MAIN WINDOW
+--==================================================
+
+makeDraggable(main)
+
+--==================================================
+-- DRAG MINI BUTTON
+--==================================================
+
+makeDraggable(toggleFrame)
+
+--==================================================
+-- BUTTON PRESS ANIMATION
+--==================================================
+
+local function addPressAnimation(button)
+
+    if not button then
+        return
+    end
+
+    button.InputBegan:Connect(function(input)
+
+        if input.UserInputType ==
+            Enum.UserInputType.MouseButton1
+        or input.UserInputType ==
+            Enum.UserInputType.Touch then
+
+            TS:Create(
+                button,
+                TweenInfo.new(
+                    0.08,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+                {
+                    Size = UDim2.new(
+                        button.Size.X.Scale,
+                        button.Size.X.Offset - 2,
+                        button.Size.Y.Scale,
+                        button.Size.Y.Offset - 2
+                    )
+                }
+            ):Play()
+
+        end
+
+    end)
+
+    button.InputEnded:Connect(function(input)
+
+        if input.UserInputType ==
+            Enum.UserInputType.MouseButton1
+        or input.UserInputType ==
+            Enum.UserInputType.Touch then
+
+            TS:Create(
+                button,
+                TweenInfo.new(
+                    0.1,
+                    Enum.EasingStyle.Back,
+                    Enum.EasingDirection.Out
+                ),
+                {
+                    Size = UDim2.new(
+                        button.Size.X.Scale,
+                        button.Size.X.Offset + 0,
+                        button.Size.Y.Scale,
+                        button.Size.Y.Offset + 0
+                    )
+                }
+            ):Play()
+
+        end
+
+    end)
+
+end
+
+addPressAnimation(espBtn)
+addPressAnimation(trcBtn)
+addPressAnimation(aimBtn)
+addPressAnimation(partBtn)
+addPressAnimation(boostFpsBtn)
+addPressAnimation(rgbFpsBtn)
+addPressAnimation(devBtn)
+addPressAnimation(minBtn)
+addPressAnimation(clsBtn)
+addPressAnimation(toggleFrame)
+
+--==================================================
+-- FOV INPUT VALIDATION
+--==================================================
+
+fovInp.FocusLost:Connect(function()
+
+    local value =
+        tonumber(fovInp.Text)
+
+    if not value then
+
+        fovInp.Text = ""
+
+        fovCircle.Radius = 150
+
+        return
+
+    end
+
+    value =
+        math.clamp(
+            value,
+            10,
+            1000
+        )
+
+    fovCircle.Radius = value
+
+end)
+
+--==================================================
+-- LOCK DISTANCE VALIDATION
+--==================================================
+
+lockDistInp.FocusLost:Connect(function()
+
+    local value =
+        tonumber(lockDistInp.Text)
+
+    if not value then
+
+        lockDistInp.Text = ""
+
+        lockDistance = 300
+
+        return
+
+    end
+
+    lockDistance =
+        math.clamp(
+            value,
+            10,
+            5000
+        )
+
+end)
+
+--==================================================
+-- PLAYER SETUP
+--==================================================
+
+for _,player in ipairs(
+    P:GetPlayers()
+) do
+
+    if player ~= LP then
+        addESP(player)
+    end
+
+end
+
+P.PlayerAdded:Connect(function(player)
+
+    if player ~= LP then
+        addESP(player)
+    end
+
+end)
+
+P.PlayerRemoving:Connect(function(player)
+
+    clean(player)
+
+end)
+
+--==================================================
+-- 5/5 : WINDOW CONTROL + SOUND + CLEANUP
+--==================================================
+--==================================================
+-- MINIMIZE
+--==================================================
+minBtn.MouseButton1Click:Connect(function()
+    playClick()
+    if not main.Visible then
+        return
+    end
+    local tween =
+        TS:Create(
+            main,
+            TweenInfo.new(
+                0.25,
+                Enum.EasingStyle.Quint,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Size = UDim2.new(
+                    0,
+                    410,
+                    0,
+                    0
+                )
+            }
+        )
+    tween:Play()
+    tween.Completed:Connect(function()
+        if main then
+            main.Visible = false
+        end
+        if toggleFrame then
+            toggleFrame.Visible = true
+        end
+    end)
+end)
+--==================================================
+-- CLOSE BUTTON
+--==================================================
+clsBtn.MouseButton1Click:Connect(function()
+    playClick()
+    -- ปิด FPS Counter
+    if FpsConnection then
+        FpsConnection:Disconnect()
+        FpsConnection = nil
+    end
+    if FpsLabel then
+        FpsLabel.Visible = false
+    end
+    -- ปิด FOV
+    if fovCircle then
+        fovCircle.Visible = false
+    end
+    -- ลบ ESP / Tracers
+    for player,_ in pairs(db) do
+        clean(player)
+    end
+    -- ปิด RGB Connection
+    if borderConnection then
+        borderConnection:Disconnect()
+        borderConnection = nil
+    end
+    -- Animation ปิด
+    local tween =
+        TS:Create(
+            main,
+            TweenInfo.new(
+                0.25,
+                Enum.EasingStyle.Quint,
+                Enum.EasingDirection.In
+            ),
+            {
+                Size = UDim2.new(
+                    0,
+                    410,
+                    0,
+                    0
+                )
+            }
+        )
+    tween:Play()
+    tween.Completed:Connect(function()
+        if fovCircle then
+            pcall(function()
+                fovCircle:Remove()
+            end)
+        end
+        if sg then
+            sg:Destroy()
+        end
+    end)
+end)
+--==================================================
+-- OPEN FROM MINI BUTTON
+--==================================================
+toggleFrame.MouseButton1Click:Connect(function()
+    playClick()
+    toggleFrame.Visible = false
+    main.Visible = true
+    main.Size =
+        UDim2.new(
+            0,
+            410,
+            0,
+            0
+        )
+    TS:Create(
+        main,
+        TweenInfo.new(
+            0.35,
+            Enum.EasingStyle.Quint,
+            Enum.EasingDirection.Out
+        ),
+        {
+            Size = UDim2.new(
+                0,
+                410,
+                0,
+                420
+            )
+        }
+    ):Play()
+end)
+--==================================================
+-- UNIVERSAL SOUND FOR ALL TEXT BUTTONS
+--==================================================
+local connectedButtons = {}
+local function addUniversalSound(button)
+    if not button then
+        return
+    end
+    if connectedButtons[button] then
+        return
+    end
+    connectedButtons[button] = true
+    button.Activated:Connect(function()
+        playClick()
+    end)
+end
+addUniversalSound(espBtn)
+addUniversalSound(trcBtn)
+addUniversalSound(aimBtn)
+addUniversalSound(partBtn)
+addUniversalSound(boostFpsBtn)
+addUniversalSound(rgbFpsBtn)
+addUniversalSound(devBtn)
+addUniversalSound(minBtn)
+addUniversalSound(clsBtn)
+addUniversalSound(toggleFrame)
+--==================================================
+-- INPUT SOUND
+--==================================================
+local function addInputSound(inputBox)
+    if not inputBox then
+        return
+    end
+    inputBox.InputBegan:Connect(function(input)
+        if input.UserInputType ==
+            Enum.UserInputType.MouseButton1
+        or input.UserInputType ==
+            Enum.UserInputType.Touch then
+            playClick()
+        end
+    end)
+end
+addInputSound(fovInp)
+addInputSound(lockDistInp)
+--==================================================
+-- FPS LABEL RGB
+--==================================================
+local fpsRGBConnection
+fpsRGBConnection =
+    RS.RenderStepped:Connect(function()
+        if not sg or not sg.Parent then
+            if fpsRGBConnection then
+                fpsRGBConnection:Disconnect()
+            end
+            return
+        end
+        if FpsLabel and FpsLabel.Visible then
+            local strokeObject =
+                FpsLabel:FindFirstChildOfClass(
+                    "UIStroke"
+                )
+            if strokeObject then
+                strokeObject.Color =
+                    Color3.fromHSV(
+                        (os.clock() * 0.4) % 1,
+                        1,
+                        1
+                    )
+            end
+        end
+    end)
+--==================================================
+-- DEFAULT STATES
+--==================================================
+espOn = false
+trcOn = false
+aimOn = false
+aimPart = "HumanoidRootPart"
+lockDistance = 300
+fovCircle.Radius = 150
+fovCircle.Visible = false
+--==================================================
+-- DEFAULT INPUT TEXT
+--==================================================
+fovInp.PlaceholderText =
+    "FOV SIZE   •   DEFAULT 150"
+lockDistInp.PlaceholderText =
+    "LOCK DISTANCE   •   DEFAULT 300"
+--==================================================
+-- FINAL SAFETY
+--==================================================
+if main then
+    main.Visible = true
+end
+if toggleFrame then
+    toggleFrame.Visible = false
+end
+--==================================================
+-- DONE
+--==================================================
