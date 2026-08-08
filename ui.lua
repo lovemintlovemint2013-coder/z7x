@@ -1,27 +1,7 @@
 --========================================================--
---              Z7X // ANIME GRUNGE UI
---                  UI ONLY
---========================================================--
---
---  ███████╗███████╗ █████╗ ████████╗██╗   ██╗██████╗
---  ╚══███╔╝╚══███╔╝██╔══██╗╚══██╔══╝╚██╗ ██╔╝╚════██╗
---    ███╔╝   ███╔╝ ███████║   ██║    ╚████╔╝   ▄███╔╝
---   ███╔╝   ███╔╝  ██╔══██║   ██║     ╚██╔╝    ▀▀══╝
---  ███████╗███████╗██║  ██║   ██║      ██║     ██╗
---  ╚══════╝╚══════╝╚═╝  ╚═╝   ╚═╝      ╚═╝     ╚═╝
---
---  IMPORTANT FOR AI:
---
---  THIS FILE IS UI ONLY.
---
---  EVERY "FEATURE SYSTEM GOES HERE" COMMENT
---  IS THE EXACT PLACE WHERE THE REAL SYSTEM
---  SHOULD BE INSERTED.
---
---  DO NOT CREATE A NEW UI.
---  DO NOT REPLACE THIS UI.
---  CONNECT THE REAL FEATURE TO THE CALLBACK.
---
+-- Z7X ANIME GRUNGE UI
+-- UI ONLY
+-- ระบบจริงอยู่ใน features.lua
 --========================================================--
 
 local Players = game:GetService("Players")
@@ -31,6 +11,16 @@ local UIS = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 
 --========================================================--
+-- LOAD FEATURES
+--========================================================--
+
+-- สำคัญ:
+-- ไฟล์ features.lua ต้องอยู่ตำแหน่งเดียวกับ ui.lua
+-- และต้องเป็น ModuleScript
+
+local Features = require(script.Parent:WaitForChild("features"))
+
+--========================================================--
 -- SETTINGS
 --========================================================--
 
@@ -38,16 +28,14 @@ local WIDTH = 520
 local HEIGHT = 455
 
 local YELLOW = Color3.fromRGB(255, 210, 48)
-local YELLOW_BRIGHT = Color3.fromRGB(255, 228, 100)
+local WHITE = Color3.fromRGB(238, 238, 240)
+local GRAY = Color3.fromRGB(125, 125, 132)
+local DARK_GRAY = Color3.fromRGB(48, 48, 53)
 
 local BLACK = Color3.fromRGB(7, 7, 9)
 local SIDEBAR_COLOR = Color3.fromRGB(11, 11, 14)
 local PANEL = Color3.fromRGB(17, 17, 21)
 local PANEL_HOVER = Color3.fromRGB(31, 29, 22)
-
-local WHITE = Color3.fromRGB(238, 238, 240)
-local GRAY = Color3.fromRGB(125, 125, 132)
-local DARK_GRAY = Color3.fromRGB(48, 48, 53)
 
 --========================================================--
 -- GUI
@@ -61,15 +49,14 @@ Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 Gui.Parent = Player:WaitForChild("PlayerGui")
 
 --========================================================--
--- SOUND
+-- BOOT SOUND
 --========================================================--
 
 local BootSound = Instance.new("Sound")
 BootSound.Name = "BootSound"
 
--- ใส่ SoundId ของคุณตรงนี้
--- ตัวอย่าง:
--- BootSound.SoundId = "rbxassetid://123456789"
+-- ใส่ SoundId ตรงนี้
+-- BootSound.SoundId = "rbxassetid://ใส่ไอดีเสียง"
 
 BootSound.Volume = 0.5
 BootSound.Parent = Gui
@@ -87,7 +74,6 @@ Main.Position = UDim2.new(
     0.5,
     -HEIGHT / 2
 )
-
 Main.BackgroundColor3 = BLACK
 Main.BorderSizePixel = 0
 Main.ClipsDescendants = true
@@ -206,7 +192,7 @@ Subtitle.TextXAlignment = Enum.TextXAlignment.Left
 Subtitle.Parent = Header
 
 --========================================================--
--- MINIMIZE BUTTON
+-- MINIMIZE
 --========================================================--
 
 local Minimize = Instance.new("TextButton")
@@ -226,12 +212,8 @@ local MinCorner = Instance.new("UICorner")
 MinCorner.CornerRadius = UDim.new(0, 11)
 MinCorner.Parent = Minimize
 
-local MinStroke = Instance.new("UIStroke")
-MinStroke.Color = DARK_GRAY
-MinStroke.Parent = Minimize
-
 --========================================================--
--- CLOSE BUTTON
+-- CLOSE
 --========================================================--
 
 local Close = Instance.new("TextButton")
@@ -250,10 +232,6 @@ Close.Parent = Header
 local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(0, 11)
 CloseCorner.Parent = Close
-
-local CloseStroke = Instance.new("UIStroke")
-CloseStroke.Color = DARK_GRAY
-CloseStroke.Parent = Close
 
 --========================================================--
 -- PAGE CONTAINER
@@ -331,36 +309,16 @@ end
 -- FEATURE BUTTON
 --========================================================--
 --
--- AI IMPORTANT:
+-- ระบบจริงทั้งหมดอยู่ใน features.lua
 --
--- THIS IS WHERE EACH FEATURE IS CONNECTED.
+-- UI จะส่ง Enabled ให้ features.lua
 --
--- The callback receives:
---
--- true  = ON
--- false = OFF
---
--- DO NOT CREATE A NEW UI BUTTON.
---
--- PUT THE REAL FEATURE SYSTEM INSIDE THE CALLBACK.
---
--- Example structure:
---
--- AddButton(Page, "Feature Name", function(Enabled)
---
---     -- FEATURE SYSTEM GOES HERE
---
---     if Enabled then
---         -- FEATURE ON
---     else
---         -- FEATURE OFF
---     end
---
--- end)
+-- true  = เปิด
+-- false = ปิด
 --
 --========================================================--
 
-local function AddButton(Page, Text, Callback)
+local function AddButton(Page, Text, FeatureFunction)
 
     local Button = Instance.new("TextButton")
     Button.Name = Text
@@ -404,8 +362,8 @@ local function AddButton(Page, Text, Callback)
     Label.Parent = Button
 
     local Status = Instance.new("TextLabel")
-    Status.Size = UDim2.fromOffset(35, 18)
-    Status.Position = UDim2.new(1, -65, 0.5, -9)
+    Status.Size = UDim2.fromOffset(45, 18)
+    Status.Position = UDim2.new(1, -72, 0.5, -9)
     Status.BackgroundTransparency = 1
     Status.Text = "OFF"
     Status.TextColor3 = GRAY
@@ -491,18 +449,11 @@ local function AddButton(Page, Text, Callback)
         end
 
         --================================================--
-        --      >>> FEATURE SYSTEM GOES HERE <<<
-        --================================================--
-        --
-        -- Enabled == true  -> Feature ON
-        -- Enabled == false -> Feature OFF
-        --
-        -- AI: INSERT THE REAL SYSTEM HERE.
-        --
+        -- ส่งคำสั่งไปยัง features.lua
         --================================================--
 
-        if Callback then
-            Callback(Enabled)
+        if FeatureFunction then
+            FeatureFunction(Enabled)
         end
 
     end)
@@ -511,7 +462,7 @@ local function AddButton(Page, Text, Callback)
 end
 
 --========================================================--
--- PAGES
+-- CREATE PAGES
 --========================================================--
 
 local Home = CreatePage("Home")
@@ -520,92 +471,83 @@ local Visual = CreatePage("Visual")
 local Settings = CreatePage("Settings")
 
 --========================================================--
--- HOME FEATURES
+-- HOME
 --========================================================--
 
 AddSection(Home, "MAIN")
 
 AddButton(Home, "Feature 01", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- ยังไม่มีระบบ
+    -- กำลังพัฒนา
 
 end)
 
 AddButton(Home, "Feature 02", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- ยังไม่มีระบบ
+    -- กำลังพัฒนา
 
 end)
 
 AddButton(Home, "Feature 03", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- ยังไม่มีระบบ
+    -- กำลังพัฒนา
 
 end)
 
 --========================================================--
--- PLAYER FEATURES
+-- PLAYER
 --========================================================--
 
 AddSection(PlayerPage, "PLAYER")
 
 AddButton(PlayerPage, "Feature 04", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- ยังไม่มีระบบ
+    -- กำลังพัฒนา
 
 end)
 
 AddButton(PlayerPage, "Feature 05", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- ยังไม่มีระบบ
+    -- กำลังพัฒนา
 
 end)
 
 AddButton(PlayerPage, "Feature 06", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- ยังไม่มีระบบ
+    -- กำลังพัฒนา
 
 end)
 
 --========================================================--
--- VISUAL FEATURES
+-- VISUAL
 --========================================================--
 
 AddSection(Visual, "VISUAL")
 
 AddButton(Visual, "Feature 07", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- ยังไม่มีระบบ
+    -- กำลังพัฒนา
 
 end)
 
 AddButton(Visual, "Feature 08", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- ยังไม่มีระบบ
+    -- กำลังพัฒนา
 
 end)
 
 AddButton(Visual, "Feature 09", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- ยังไม่มีระบบ
+    -- กำลังพัฒนา
 
 end)
 
@@ -615,19 +557,39 @@ end)
 
 AddSection(Settings, "SETTINGS")
 
+--========================================================--
+-- FEATURE FROM features.lua
+--========================================================--
+
+AddButton(Settings, "Boost FPS", function(Enabled)
+
+    if Features.ToggleBoostFPS then
+        Features.ToggleBoostFPS(Enabled)
+    end
+
+end)
+
+AddButton(Settings, "Show RGB FPS", function(Enabled)
+
+    if Features.ToggleFpsCounter then
+        Features.ToggleFpsCounter(Enabled)
+    end
+
+end)
+
+--========================================================--
+-- FUTURE FEATURES
+--========================================================--
+
 AddButton(Settings, "Feature 10", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- กำลังพัฒนา
 
 end)
 
 AddButton(Settings, "Feature 11", function(Enabled)
 
-    --====================================================--
-    -- FEATURE SYSTEM GOES HERE
-    --====================================================--
+    -- กำลังพัฒนา
 
 end)
 
@@ -675,7 +637,6 @@ local function CreateSidebarButton(Icon, Name, Y)
 
     SidebarButtons[Name] = {
         Button = Button,
-        Stroke = Stroke,
         Indicator = Indicator
     }
 
@@ -805,13 +766,12 @@ SettingsButton.MouseButton1Click:Connect(function()
 end)
 
 --========================================================--
--- MINIMIZE SYSTEM
+-- MINIMIZE
 --========================================================--
 
 local Minimized = false
 
 local FullSize = UDim2.fromOffset(WIDTH, HEIGHT)
-
 local MiniSize = UDim2.fromOffset(WIDTH, 66)
 
 Minimize.MouseButton1Click:Connect(function()
@@ -863,7 +823,7 @@ Minimize.MouseButton1Click:Connect(function()
 end)
 
 --========================================================--
--- DRAG SYSTEM
+-- DRAG
 --========================================================--
 
 local Dragging = false
@@ -905,6 +865,7 @@ UIS.InputChanged:Connect(function(Input)
         Main.Position = UDim2.new(
             StartPosition.X.Scale,
             StartPosition.X.Offset + Delta.X,
+
             StartPosition.Y.Scale,
             StartPosition.Y.Offset + Delta.Y
         )
@@ -956,6 +917,7 @@ Main.Size = UDim2.fromOffset(
 Main.Position = UDim2.new(
     0.5,
     -WIDTH * 0.41,
+
     0.5,
     -HEIGHT * 0.41 + 12
 )
@@ -977,17 +939,9 @@ for _, Object in ipairs(Main:GetDescendants()) do
 
 end
 
---========================================================--
--- BOOT SOUND
---========================================================--
-
 if BootSound.SoundId ~= "" then
     BootSound:Play()
 end
-
---========================================================--
--- BOOT UI
---========================================================--
 
 TweenService:Create(
     Main,
